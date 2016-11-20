@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block page-header %}
+    主机历史信息监控
+{% endblock %}
+
+{% block page-content %}
+{#    # """#}
+{#    # data = {#}
+{#    #     "host_id":#}
+{#    #         "cpu":{'status': 0, 'iowait': '0.00', 'system': '2.14', 'idle': '97.24', 'user': '0.61', 'steal': '0.00', 'nice': '0.00'},#}
+{#    #         "memory":{'MemUsage': 123, 'SwapUsage': 0},#}
+{#    #         "network":{'ens33': {'net_out': '0.00', 'net_in': '0.00'}},#}
+{#    #         "block":{'fsusage': 58, 'breadps': '0.00', 'rtps': '0.00', 'wtps': '0.00', 'bwrtnps': '0.00'},#}
+{#    # }#}
+{#    # """#}
+        <div id="container" style="height: 450px;"></div>
+{% endblock %}
+{% block base-js %}
+    <script src="http://cdn.hcharts.cn/highstock/highstock.js"></script>
+    <script src="http://cdn.hcharts.cn/highstock/modules/exporting.js"></script>
+
+
+    {% block js %}
+        <script type="text/javascript">
+
+function CreateChart(monitor_data) {
+{#    console.log(monitor_data['idle']);#}
+    Highcharts.setOptions({
+      global: {
+         useUTC: false
+      },
+      credits:{
+         enabled:false // 禁用版权信息
+        }
+   });
+    $('#container').highcharts({                  //图表展示容器，与 div 的 id 保持一致
+        chart: {
+            type:"spline"
+        },
+        title: {
+            text: '主机CPU历史监控'                 //指定图表标题
+        },
+        xAxis: {
+            type: 'datetime'
+            //categories: [(new Date()).getTime()-2000,(new Date()).getTime()-1000,(new Date()).getTime()]   //指定x轴分组
+        },
+        yAxis: {
+            title: {
+                text: '百分比'                 //指定y轴的标题
+            },min:0,max:100
+        },
+        series:
+            [
+            {name: 'idle',data: monitor_data['idle']},
+            {name: 'iowait',data: monitor_data['iowait']},
+            {name: 'nice',data: monitor_data['nice']},
+            {name: 'system',data: monitor_data['system']},
+            {name: 'user',data: monitor_data['user']}
+            ],
+    });
+}
+
+$(function () {
+
+    $.getJSON('{% url 'monitor:monitor_data' 2 %}', function (data) {
+         //monitor_data = data;
+         //alert(monitor_data);
+        console.log(data);
+        var data1={},time=(new Date()).getTime();
+{#                        x=data[i][0]*1000,#}
+{#                        y=data[i][1]*1#}
+        var sub_service_name_list = ['idle','system','user','nice','iowait'];
+        for(var sub_service_name_id in sub_service_name_list){
+            var data0=[];
+            for (var j in data) {
+                var
+                    t = data[j][0]*1000,
+                    d =data[j][1][sub_service_name_list[sub_service_name_id]];
+                data0.push({x:t,y:parseFloat(d)});
+
+            }
+            data1[sub_service_name_list[sub_service_name_id]]=data0
+        }
+        console.log(data1);
+        CreateChart(data1);
+
+    });
+});
+
+
+
+        </script>
+
+    {% endblock %}
+{% endblock %}

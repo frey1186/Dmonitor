@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block page-header %}
+主机{{ host_obj.hostname }}实时信息
+{% endblock %}
+
+{% block page-content %}
+<div id="container2" style="height: 500px;"></div>
+{% endblock %}
+{% block base-js %}
+    <script src="http://cdn.hcharts.cn/highstock/highstock.js"></script>
+    <script src="http://cdn.hcharts.cn/highstock/modules/exporting.js"></script>
+
+
+    {% block js %}
+        <script type="text/javascript">
+
+$(function () {
+
+    $.getJSON('{% url 'monitor:monitor_data' host_obj.id %}', function (data0) {
+        Highcharts.setOptions({
+        global : {
+            useUTC : false
+        }
+    });
+        console.log(data0);
+        // Create the chart
+        $('#container2').highcharts('StockChart', {
+
+        chart : {
+            events : {
+                load : function () {
+                    // set up the updating of the chart each second
+                    var series = this.series[0];
+                    setInterval(function () {
+
+                        $.getJSON('{% url 'monitor:current_data' host_obj.id %}', function (data) {
+{#                            console.log(data,typeof data);#}
+                            var x = (new Date()).getTime(); // current time
+                            var y = data[1];
+{#                            console.log(x,y);#}
+                            series.addPoint([x,y], true, true);
+{#                            console.log(series,typeof series)#}
+                        });
+
+
+                    }, 100000);
+                }
+            }
+        },
+        rangeSelector: {
+            buttons: [
+{#                    {#}
+{#                count: 1,#}
+{#                type: 'minute',#}
+{#                text: '1M'#}
+{#            }, {#}
+{#                count: 5,#}
+{#                type: 'minute',#}
+{#                text: '5M'#}
+{#            }, {#}
+{#                type: 'all',#}
+{#                text: 'All'#}
+{#            }#}
+            ],
+            inputEnabled: false,
+            selected: 0
+        },
+        title : {
+            text : 'RealTime Data from {{ host_obj.hostname }}'
+        },
+        exporting: {
+            enabled: false
+        },
+        series : [{
+            name : 'Request Time:',
+            data : data0,
+{#                    (function () {#}
+{#                // generate an array of random data#}
+{#                var data = [], time = (new Date()).getTime(), i;#}
+{#                for (i = -999; i <= 0; i += 1) {#}
+{#                    data.push([#}
+{#                        time + i * 1000,#}
+{#                        Math.round(Math.random() * 100)#}
+{#                    ]);#}
+{#                }#}
+{#                return data;#}
+{#            }())#}
+            type: 'spline'
+        }]
+    });
+    });
+
+});
+
+
+
+
+        </script>
+
+    {% endblock %}
+{% endblock %}

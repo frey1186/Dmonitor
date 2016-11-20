@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load customers_tags %}
+
+{% block page-left %}
+<ul class="nav nav-sidebar">
+    <li class="active"><a href="#">Customers <span class="sr-only">(current)</span></a></li>
+    <li><a href="{% url 'customer_list' %}">客户列表</a></li>
+    <li><a href="{% url 'customer_create' %}">新建客户</a></li>
+</ul>
+{% endblock %}
+
+{% block page-header %}
+    客户信息列表
+{% endblock %}
+
+{% block page-content %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>QQ</th>
+                <th>姓名</th>
+                <th>渠道</th>
+                <th>咨询课程</th>
+                <th>课程类型</th>
+                <th>客户备注</th>
+                <th>状态</th>
+                <th>课程顾问</th>
+                <th>日期</th>
+            </tr>
+
+        </thead>
+        <tbody>
+        {% for customer in customer_list %}
+            <tr>
+                <td>
+                        {{ customer.id }}
+
+                </td>
+                <td>{{ customer.qq }}</td>
+                <td>
+{#                    <a href="/monitor/customers/{{ customer.id }}">#}
+                    <a href="{% url "customer_detail" customer.id %}">
+                        {{ customer.name }}
+                    </a>
+                </td>
+                <td>{{ customer.get_source_type_display }}</td>
+                <td>{{ customer.course }}</td>
+                <td>{{ customer.get_course_type_display }}</td>
+                <td>{{ customer.consult_memo | truncatechars:10}}</td>
+                <td class="{{ customer.status }}" >{{ customer.get_status_display }}</td>
+{#                <td class="{{ customer.status }}" >{{ customer.status |felo_upper }}</td>#}
+                <td>{{ customer.consultant }}</td>
+                <td>{{ customer.date }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{#    分页#}
+    <div class="text-center">
+{#        #放置十个标签#}
+        {% guess_page2 customer_list 10 %}
+    </div>
+
+{% endblock %}

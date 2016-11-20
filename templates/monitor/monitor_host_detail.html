@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block page-header %}
+    主机{{ host_obj.hostname }}历史信息监控
+{% endblock %}
+
+{% block page-content %}
+{#        data_temp[host_id]={#}
+{#            "cpu": ['status','iowait','system', 'idle','user','steal','nice',],#}
+{#            "memory": ['MemUsage', 'SwapUsage'],#}
+{#            "network": {'ens33': ['net_out', 'net_in'], },#}
+{#            "block": ['fsusage','breadps','rtps','wtps','bwrtnps',],#}
+{#        }#}
+        {% for service_name in data_temp.keys %}
+            {% if service_name == 'network' %}
+                {% for interface in data_temp.network %}
+                <div id="container-{{ service_name }}-{{ interface }}" style="height: 250px;width: 500px"></div>
+                {% endfor %}
+            {% else %}
+{#                <div id="container-{{ service_name }}" style="height: 250px;width: 500px"></div>#}
+                <div id="container-{{ service_name }}" style="height: 500px"></div>
+            {% endif %}
+        {% endfor %}
+{% endblock %}
+{% block base-js %}
+    <script src="http://cdn.hcharts.cn/highstock/highstock.js"></script>
+    <script src="http://cdn.hcharts.cn/highstock/modules/exporting.js"></script>
+
+
+    {% block js %}
+        <script type="text/javascript">
+
+function CreateChart(monitor_data,
+                     service_name, //cpu
+                     sub_service_list,//ens33,idle
+                     sub_service_name, //net_in
+                     y_tile_text
+) {
+{#    console.log(monitor_data['idle']);#}
+    Highcharts.setOptions({
+      global: {
+         useUTC: false
+      },
+      credits:{
+         enabled:false // 禁用版权信息
+        }
+   });
+    $('#container-'+service_name).highcharts({                  //图表展示容器，与 div 的 id 保持一致
+        chart: {
+            type:"spline"
+        },
+        title: {
+            text: '主机'+service_name                 //指定图表标题
+        },
+        xAxis: {
+            type: 'datetime'
+            //categories: [(new Date()).getTime()-2000,(new Date()).getTime()-1000,(new Date()).getTime()]   //指定x轴分组
+        },
+        yAxis: {
+            title: {
+                text: y_tile_text                 //指定y轴的标题
+            },min:0,max:100
+        },
+        series:
+                function () {
+            var data = [];
+            for(var i in sub_service_list){
+                data.push({
+                    name:sub_service_list[i],
+                    data:monitor_data[sub_service_list[i]]
+                });
+            }
+            return data
+        }()
+
+{#            [#}
+{#            {name: 'idle',data: monitor_data['idle']},#}
+{#            {name: 'iowait',data: monitor_data['iowait']},#}
+{#            {name: 'nice',data: monitor_data['nice']},#}
+{#            {name: 'system',data: monitor_data['system']},#}
+{#            {name: 'user',data: monitor_data['user']}#}
+{#            ]#}
+    });
+}
+
+$(function () {
+
+    $.getJSON('{% url 'monitor:monitor_data' host_obj.id %}', function (data) {
+         //monitor_data = data;
+         //alert(monitor_data);
+        {% for service_name,service_list in data_temp.items %}
+        {% if service_name == 'network' %}
+
+        {% else %}
+
+        console.log(data);
+        var data1={};
+        var sub_service_name_list = [];
+            {% for sub_service_name in service_list %}
+            sub_service_name_list.push({{ sub_service_name }});
+            {% endfor %}
+        for(var sub_service_name_id in sub_service_name_list){
+            var data0=[];
+            for (var j in data) {
+                var
+                    t = data[j][0]*1000,
+                    d =data[j][1][sub_service_name_list[sub_service_name_id]];
+                data0.push({x:t,y:parseFloat(d)});
+
+            }
+            data1[sub_service_name_list[sub_service_name_id]]=data0
+        }
+        console.log(data1);
+        CreateChart(data1,'{{ service_name }}',sub_service_name_list,'','percent');
+        {% endif %}
+        {% endfor %}
+    });
+});
+
+
+
+        </script>
+
+    {% endblock %}
+{% endblock %}

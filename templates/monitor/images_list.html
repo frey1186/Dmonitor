@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+{% block page-header %}
+images信息
+{% endblock %}
+
+{% block page-content %}
+{#    {{ images_list }}#}
+    <table class="table table-striped table-hover">
+        <tr>
+            <th>REPOSITORY:TAG</th>
+            <th>IMAGE ID</th>
+            <th>CREATED</th>
+            <th>SIZE</th>
+            <th>HOSTNAME/IPADDR</th>
+        </tr>
+        {% for host_addr,host_images in images_list.items %}
+        {% for image in host_images %}
+        <tr>
+        <td>{{ image.RepoTags.0 }}</td>
+        <td>{{ image.Id |truncatechars:"30" }}</td>
+        <td>{{ image.Created | transform_time}}</td>
+        <td>{% widthratio image.Size 1048576 1%}M</td>
+        <td>{{ host_addr }}</td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+    </table>
+{% endblock %}

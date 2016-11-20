@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block page-body %}
+
+    <div style="text-align: center">
+{#        <form  class="form-inline" style="position: relative;top: -440px;left:150px"#}
+        <form  class="form-inline"
+        method="post">
+            {% csrf_token %}
+          <div class="form-group">
+            <label class="sr-only" for="exampleInputEmail3">Username</label>
+            <input type="text" class="form-control" name="username">
+          </div>
+          <div class="form-group">
+            <label class="sr-only" for="exampleInputPassword3">Password</label>
+            <input type="password" class="form-control" name="password">
+          </div>
+          <button type="submit" class="btn btn-success">Sign in</button>
+          <div>
+          {{ login_err }}
+          </div>
+        </form>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "monitor/customers/customers.html" %}
+
+
+
+{% block page-header %}
+    客户详细信息
+{% endblock %}
+
+{% block page-content %}
+    <form class="form-horizontal" method="post">{% csrf_token %}
+        <div class="form-group">
+            {% for customer in customer_obj %}
+                {% if customer.field.required %}
+                    <label class="col-sm-2 control-label">*{{ customer.label }}</label>
+                {% else %}
+                    <label style="font-weight: normal" class="col-sm-2 control-label">{{ customer.label }}</label>
+                {% endif %}
+                <div class="col-sm-9">
+                    {{ customer }}
+                    {% if customer.errors %}
+                        <ul>
+                            {% for err in customer.errors %}
+                                <li style="color: red">{{ err }}</li>
+                            {% endfor %}
+                        </ul>
+
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    <div class="col-sm-11 text-right">
+        <input class="btn btn-default" type="button" value="Back" onclick="window.location='{{ parent_url }}'">
+        <input class="btn btn-success" type="submit" value="Save">
+    </div>
+    </form>
+
+{% endblock %}
