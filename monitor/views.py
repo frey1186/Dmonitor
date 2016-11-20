@@ -183,21 +183,32 @@ def monitor_data_detail(request, host_id):
 
 import random
 def monitor_data(request, host_id):
+    data_temp = _get_data_temp(host_id)
     #'iowait': '0.00', 'system': '2.14', 'idle': '97.24', 'user': '0.61', 'steal': '0.00', 'nice': '0.00'
-    redis_keys = 'RawData_(%s,)_host_*' % host_id
+    #redis_keys = 'RawData_(%s,)_host_%s' % (host_id,service_name)
     redis_values = {}
-    for redis_key in redis_keys:
-        redis_values[redis_key] = REDIS_OBJ.lrange(redis_key, 0, 30)
-    temp_data = []
-    for obj in redis_values:
-        report_time, mondata = obj.split(',', 1)
-        mondata = eval(mondata)
-        data_unit = [report_time, mondata]
-        temp_data.append(data_unit)
-    # print "old----->:",temp_data
-    temp_data.reverse()
+    for service_name in data_temp:
+        redis_values[service_name] = REDIS_OBJ.lrange('RawData_(%s,)_host_%s' % (host_id,service_name),
+                                                      0, 30)
 
-    data = json.dumps(temp_data)
+    data = {} #最后的返回值
+    for key, objs in redis_values.items():  # key：redis键，objs：redis列表
+        temp_data = []
+        for obj in objs:  #obj：redis列表中的值，值的格式为“时间，一堆值”
+            report_time, mondata = obj.split(',', 1)
+            mondata = eval(mondata)
+            data_unit = [report_time, mondata]
+            temp_data.append(data_unit)
+        service_name = key.split("_")[-1] #取键的最后一个下划线后面的值：cpu，memory等
+        # print key,service_name
+        # print "old----->:",temp_data
+        temp_data.reverse()
+        data[service_name] = temp_data
+        #data格式为：{cpu:[[time,value],[time,value],[time,value],[time,value],...],
+        #            memory:[[time,value],[time,value],[time,value],[time,value]...] }
+
+    data = json.dumps(data)  #json序列化返回值
+    print data
     return HttpResponse(data)
 
 

@@ -14,11 +14,11 @@
         {% for service_name in data_temp.keys %}
             {% if service_name == 'network' %}
                 {% for interface in data_temp.network %}
-                <div id="container-{{ service_name }}-{{ interface }}" style="height: 250px;width: 500px"></div>
+                <div id="container-{{ service_name }}-{{ interface }}" style="height: 250px;width: 500px;float: left"></div>
                 {% endfor %}
             {% else %}
-{#                <div id="container-{{ service_name }}" style="height: 250px;width: 500px"></div>#}
-                <div id="container-{{ service_name }}" style="height: 500px"></div>
+                <div id="container-{{ service_name }}" style="height: 250px;width: 500px;float: left"></div>
+{#                <div id="container-{{ service_name }}" style="height: 500px"></div>#}
             {% endif %}
         {% endfor %}
 {% endblock %}
@@ -90,28 +90,54 @@ $(function () {
          //alert(monitor_data);
         {% for service_name,service_list in data_temp.items %}
         {% if service_name == 'network' %}
+            var data1={};
+            var interface_list=[],sub_service_name_list = [];
+                {% for interface_name,sub_service_name_list in service_list.items %}
+                interface_list.push('{{ interface_name }}');
+                    {% for sub_service_name in sub_service_name_list %}
+                        sub_service_name_list.push('{{ sub_service_name }}');
+                    {% endfor %}
+                {% endfor %}
+            //console.log(interface_list,sub_service_name_list);
+
+            for(var sub_service_name_id in sub_service_name_list){
+                var data0=[];
+                for (var j in data['{{ service_name }}']) {
+                    var
+                        t = data['{{ service_name }}'][j][0]*1000,
+                        d =data['{{ service_name }}'][j][1][sub_service_name_list[sub_service_name_id]];
+                    data0.push({x:t,y:parseFloat(d)});
+
+                }
+                data1[sub_service_name_list[sub_service_name_id]]=data0
+            }
+{#            console.log(data1);#}
+            CreateChart(data1,'{{ service_name }}',sub_service_name_list,'','percent/kBps');
+
+
 
         {% else %}
 
-        console.log(data);
-        var data1={};
-        var sub_service_name_list = [];
-            {% for sub_service_name in service_list %}
-            sub_service_name_list.push({{ sub_service_name }});
-            {% endfor %}
-        for(var sub_service_name_id in sub_service_name_list){
-            var data0=[];
-            for (var j in data) {
-                var
-                    t = data[j][0]*1000,
-                    d =data[j][1][sub_service_name_list[sub_service_name_id]];
-                data0.push({x:t,y:parseFloat(d)});
+{#            console.log(data);#}
+            var data1={};
+            var sub_service_name_list = [];
+                {% for sub_service_name in service_list %}
+                sub_service_name_list.push('{{ sub_service_name }}');
+                {% endfor %}
 
+            for(var sub_service_name_id in sub_service_name_list){
+                var data0=[];
+                for (var j in data['{{ service_name }}']) {
+                    var
+                        t = data['{{ service_name }}'][j][0]*1000,
+                        d =data['{{ service_name }}'][j][1][sub_service_name_list[sub_service_name_id]];
+                    data0.push({x:t,y:parseFloat(d)});
+
+                }
+                data1[sub_service_name_list[sub_service_name_id]]=data0
             }
-            data1[sub_service_name_list[sub_service_name_id]]=data0
-        }
-        console.log(data1);
-        CreateChart(data1,'{{ service_name }}',sub_service_name_list,'','percent');
+{#            console.log(data1);#}
+            CreateChart(data1,'{{ service_name }}',sub_service_name_list,'','percent/kBps');
         {% endif %}
         {% endfor %}
     });
