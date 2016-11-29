@@ -64,3 +64,28 @@ class DataProcessor(object):
 
         else:
             pass
+
+
+class DataOptimization(object):
+    def __init__(self, host_or_container_id, settings, REDIS_OBJ):
+        self.host_or_container_id = host_or_container_id,
+        self.settings = settings,
+        self.REDIS_OBJ = REDIS_OBJ
+
+    def get_data(self):
+        pass
+
+
+    def optimize_data(self):
+        pass
+
+    def save_data(self):
+        pass
+
+
+    def optimize_avg(self):
+        pass
+    def optimize_max(self):
+        pass
+    def optimize_min(self):
+        pass

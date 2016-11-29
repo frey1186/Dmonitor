@@ -50,7 +50,7 @@ function CreateChart(monitor_data,
             type:"spline"
         },
         title: {
-            text: '主机'+service_name                 //指定图表标题
+            text: service_name                 //指定图表标题
         },
         xAxis: {
             type: 'datetime'
@@ -72,14 +72,6 @@ function CreateChart(monitor_data,
             }
             return data
         }()
-
-{#            [#}
-{#            {name: 'idle',data: monitor_data['idle']},#}
-{#            {name: 'iowait',data: monitor_data['iowait']},#}
-{#            {name: 'nice',data: monitor_data['nice']},#}
-{#            {name: 'system',data: monitor_data['system']},#}
-{#            {name: 'user',data: monitor_data['user']}#}
-{#            ]#}
     });
 }
 
@@ -89,34 +81,43 @@ $(function () {
          //monitor_data = data;
          //alert(monitor_data);
         {% for service_name,service_list in data_temp.items %}
-        {% if service_name == 'network' %}
+        {% if service_name == 'network' %}  //网络
             var data1={};
             var interface_list=[],sub_service_name_list = [];
                 {% for interface_name,sub_service_name_list in service_list.items %}
                 interface_list.push('{{ interface_name }}');
                     {% for sub_service_name in sub_service_name_list %}
-                        sub_service_name_list.push('{{ sub_service_name }}');
+                        sub_service_name_list.push(['{{ interface_name }}','{{ sub_service_name }}']);
                     {% endfor %}
                 {% endfor %}
-            //console.log(interface_list,sub_service_name_list);
-
+            console.log(interface_list,sub_service_name_list);
+            //["ens33"] [["ens33","net_out"],["ens33", "net_in"]]
+            console.log(data['network']);
+            // [Array[2], Array[2]...
+                // 0:Array[2]
+                    // 0:"1479722839.35"
+                    // 1:Object
+                        // ens33:
+                            // net_in:"0.08"
+                            // net_out:"0.00"
             for(var sub_service_name_id in sub_service_name_list){
                 var data0=[];
                 for (var j in data['{{ service_name }}']) {
                     var
                         t = data['{{ service_name }}'][j][0]*1000,
-                        d =data['{{ service_name }}'][j][1][sub_service_name_list[sub_service_name_id]];
+                        d =data['{{ service_name }}'][j][1][sub_service_name_list[sub_service_name_id][0]][sub_service_name_list[sub_service_name_id][1]];
+{#                    console.log(d);#}
                     data0.push({x:t,y:parseFloat(d)});
 
                 }
-                data1[sub_service_name_list[sub_service_name_id]]=data0
+                data1[sub_service_name_list[sub_service_name_id][0]+'-'+sub_service_name_list[sub_service_name_id][1]]=data0
             }
-{#            console.log(data1);#}
-            CreateChart(data1,'{{ service_name }}',sub_service_name_list,'','percent/kBps');
+            console.log(data1);
+            CreateChart(data1,'{{ service_name }}',sub_service_name_list,'','kBps');
 
 
 
-        {% else %}
+        {% else %}   //除了网络部分
 
 {#            console.log(data);#}
             var data1={};

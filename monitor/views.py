@@ -165,7 +165,8 @@ def _get_data_temp(host_id):
     data_temp = {
         "cpu": ['status','iowait','system', 'idle','user','steal','nice',],
         "memory": ['MemUsage', 'SwapUsage'],
-        "network": {'ens33': ['net_out', 'net_in'], },
+        "network": {'ens33': ['net_out', 'net_in'],
+                    'ens38': ['net_out', 'net_in']},
         "block": ['fsusage','breadps','rtps','wtps','bwrtnps',],
     }
     return data_temp
